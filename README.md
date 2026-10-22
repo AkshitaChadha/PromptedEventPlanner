@@ -4,7 +4,7 @@ CelebrAI is an AI-powered celebration and event planning assistant for birthdays
 
 ## Project status
 
-This repository currently contains the initial application skeleton. Event planning features are not implemented yet.
+The starter application, event validation, priority-aware budget allocation, dynamic timelines, and SQLite persistence for events and tasks are in place. AI planning, expense tracking, and vendor planning are not implemented yet.
 
 ## Planned approach
 
@@ -14,7 +14,7 @@ The application will collect event details and constraints, then use determinist
 
 - `backend/`: Flask REST API and Python business logic
 - `frontend/`: React and Vite client
-- SQLite for initial local persistence (to be added with the persistence feature)
+- SQLite and SQLAlchemy for local event and task persistence
 
 ## Local setup
 
@@ -23,9 +23,9 @@ Requirements: Python 3.10+ and Node.js 20+.
 ### Backend
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r backend\requirements.txt
+python -m venv ..\.venv
+..\.venv\Scripts\Activate.ps1
+python -m pip install -r backend\requirements.txt
 Copy-Item .env.example .env
 python backend\run.py
 ```
@@ -46,7 +46,14 @@ Copy `.env.example` to `.env` for local configuration. `.env` is ignored by Git.
 
 ## Development status and assumptions
 
-The initial vertical is event planning for celebrations. INR is the planned default currency. No vendor search, booking, payments, or real AI-generated planning is available in this skeleton. The API currently exposes only a health check.
+The API provides `POST /api/events`, `GET /api/events`, `GET /api/events/{id}`, and `PATCH /api/events/{id}/tasks/{task_id}` to create and retrieve saved events and complete or reopen their generated tasks. Event creation validates the request and persists its initial timeline in SQLite. The local database file is ignored by Git. No vendor search, booking, payments, or real AI-generated planning is available yet.
+
+The budget engine uses decimal arithmetic, reduces lower-priority estimates first, preserves configured category minimums, and reports infeasible minimums as overspend instead of claiming the budget fits. The timeline engine creates planning deadlines relative to the event date, marks past deadlines overdue for upcoming events, skips new preparation tasks for past events, and preserves completed, user-edited, and custom tasks when rescheduling. Backend logic is covered with Python's built-in `unittest` runner:
+
+```powershell
+$env:PYTHONPATH = "backend"
+..\.venv\Scripts\python.exe -m unittest discover -s backend\tests -v
+```
 
 ## License
 
