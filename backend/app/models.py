@@ -40,6 +40,9 @@ class Event(Base):
     tasks: Mapped[list["Task"]] = relationship(
         back_populates="event", cascade="all, delete-orphan", order_by="Task.id"
     )
+    expenses: Mapped[list["Expense"]] = relationship(
+        back_populates="event", cascade="all, delete-orphan", order_by="Expense.spent_on, Expense.id"
+    )
 
 
 class Task(Base):
@@ -59,3 +62,16 @@ class Task(Base):
     user_edited: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     event: Mapped[Event] = relationship(back_populates="tasks")
+
+
+class Expense(Base):
+    __tablename__ = "expenses"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    event_id: Mapped[int] = mapped_column(ForeignKey("events.id", ondelete="CASCADE"), nullable=False)
+    category: Mapped[str] = mapped_column(String(60), nullable=False)
+    description: Mapped[str] = mapped_column(String(300), nullable=False, default="")
+    amount: Mapped[Decimal] = mapped_column(Numeric(18, 2), nullable=False)
+    spent_on: Mapped[date] = mapped_column(Date, nullable=False)
+
+    event: Mapped[Event] = relationship(back_populates="expenses")

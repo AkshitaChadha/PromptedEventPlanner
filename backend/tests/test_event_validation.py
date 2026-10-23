@@ -51,7 +51,17 @@ class EventValidationTests(unittest.TestCase):
                 self.assertIn("guest_count", errors)
 
     def test_rejects_invalid_budgets(self):
-        for total_budget in (0, -1, float("inf"), float("nan"), 10**10000, True, "15000"):
+        for total_budget in (
+            0,
+            -1,
+            float("inf"),
+            float("nan"),
+            10**10000,
+            True,
+            "15000",
+            15000.123,
+            10**20,
+        ):
             with self.subTest(total_budget=total_budget):
                 event, errors = validate_event_payload({**VALID_EVENT, "total_budget": total_budget})
                 self.assertIsNone(event)

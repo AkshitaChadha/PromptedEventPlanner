@@ -125,3 +125,37 @@ def allocate_budget(
         "overspend_amount": overspend_amount,
         "explanation": explanation,
     }
+
+
+def summarize_actual_spending(
+    total_budget: int | float | Decimal,
+    expenses: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Compare persisted actual expenses with an event's total budget."""
+    budget = _money(total_budget, "total_budget", allow_zero=False)
+    if not isinstance(expenses, Sequence) or isinstance(expenses, (str, bytes)):
+        raise ValueError("expenses must be a list of expense objects.")
+
+    category_totals: dict[str, Decimal] = {}
+    for expense in expenses:
+        if not isinstance(expense, Mapping):
+            raise ValueError("Every expense must be an object.")
+        category = expense.get("category")
+        if not isinstance(category, str) or not category.strip():
+            raise ValueError("Every expense must have a category.")
+        amount = _money(expense.get("amount"), f"expense for {category}", allow_zero=False)
+        category = category.strip()
+        category_totals[category] = category_totals.get(category, Decimal("0")) + amount
+
+    actual_total = sum(category_totals.values(), Decimal("0"))
+    remaining_balance = budget - actual_total
+    return {
+        "currency": "INR",
+        "budget": budget,
+        "actual_total": actual_total,
+        "category_totals": category_totals,
+        "remaining_balance": remaining_balance,
+        "over_budget": remaining_balance < 0,
+        "overspend_amount": max(Decimal("0"), -remaining_balance),
+        "percent_used": (actual_total / budget * Decimal("100")).quantize(Decimal("0.01")),
+    }

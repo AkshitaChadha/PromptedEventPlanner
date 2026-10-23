@@ -28,9 +28,11 @@ def create_app(test_config: dict | None = None) -> Flask:
 
     from app.routes.health import health_bp
     from app.routes.events import events_bp
+    from app.routes.expenses import expenses_bp
 
     app.register_blueprint(health_bp, url_prefix="/api")
     app.register_blueprint(events_bp, url_prefix="/api/events")
+    app.register_blueprint(expenses_bp, url_prefix="/api/events")
 
     @app.errorhandler(413)
     def request_too_large(_error):

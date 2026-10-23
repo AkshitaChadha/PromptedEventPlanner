@@ -1,9 +1,10 @@
 from datetime import date
-import math
+from decimal import Decimal, InvalidOperation
 from typing import Any
 
 
 SUPPORTED_EVENT_TYPES = {"birthday", "wedding", "anniversary", "community"}
+MAX_EVENT_BUDGET = Decimal("9999999999999999.99")
 REQUIRED_TEXT_FIELDS = ("event_name", "event_type", "event_date", "location")
 OPTIONAL_LIST_FIELDS = (
     "user_preferences",
@@ -57,16 +58,21 @@ def validate_event_payload(payload: Any) -> tuple[dict[str, Any] | None, dict[st
 
     total_budget = payload.get("total_budget")
     try:
+        decimal_budget = Decimal(str(total_budget))
         valid_budget = (
             not isinstance(total_budget, bool)
             and isinstance(total_budget, (int, float))
-            and math.isfinite(total_budget)
-            and total_budget > 0
+            and decimal_budget.is_finite()
+            and Decimal("0") < decimal_budget <= MAX_EVENT_BUDGET
+            and decimal_budget == decimal_budget.quantize(Decimal("0.01"))
         )
-    except OverflowError:
+    except (InvalidOperation, ValueError, OverflowError):
         valid_budget = False
     if not valid_budget:
-        errors["total_budget"] = "Enter a budget greater than zero in INR."
+        errors["total_budget"] = (
+            "Enter a positive INR budget with no more than two decimal places "
+            "and no more than ₹9,999,999,999,999,999.99."
+        )
     else:
         event["total_budget"] = total_budget
 

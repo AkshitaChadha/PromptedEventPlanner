@@ -4,7 +4,7 @@ CelebrAI is an AI-powered celebration and event planning assistant for birthdays
 
 ## Project status
 
-The starter application, event validation, priority-aware budget allocation, dynamic timelines, and SQLite persistence for events and tasks are in place. AI planning, expense tracking, and vendor planning are not implemented yet.
+The starter application, event validation, priority-aware budget allocation, dynamic timelines, and SQLite persistence for events, tasks, and actual expenses are in place. AI planning and vendor planning are not implemented yet.
 
 ## Planned approach
 
@@ -46,9 +46,9 @@ Copy `.env.example` to `.env` for local configuration. `.env` is ignored by Git.
 
 ## Development status and assumptions
 
-The API provides `POST /api/events`, `GET /api/events`, `GET /api/events/{id}`, and `PATCH /api/events/{id}/tasks/{task_id}` to create and retrieve saved events and complete or reopen their generated tasks. Event creation validates the request and persists its initial timeline in SQLite. The local database file is ignored by Git. No vendor search, booking, payments, or real AI-generated planning is available yet.
+The API provides `POST /api/events`, `GET /api/events`, `GET /api/events/{id}`, and `PATCH /api/events/{id}/tasks/{task_id}` to create and retrieve saved events and complete or reopen their generated tasks. Event creation validates the request and persists its initial timeline in SQLite. Expense tracking is available through `POST /api/events/{id}/expenses` and `GET /api/events/{id}/expenses`; `GET /api/events/{id}/budget` reports actual spend, category totals, remaining balance, and overspend. The local database file is ignored by Git. No vendor search, booking, payments, or real AI-generated planning is available yet, and these APIs are not connected to the frontend.
 
-The budget engine uses decimal arithmetic, reduces lower-priority estimates first, preserves configured category minimums, and reports infeasible minimums as overspend instead of claiming the budget fits. The timeline engine creates planning deadlines relative to the event date, marks past deadlines overdue for upcoming events, skips new preparation tasks for past events, and preserves completed, user-edited, and custom tasks when rescheduling. Backend logic is covered with Python's built-in `unittest` runner:
+The budget engine uses decimal arithmetic, reduces lower-priority estimates first, preserves configured category minimums, and reports infeasible minimums as overspend instead of claiming the budget fits. Actual expense totals are also compared with the event's overall budget. The timeline engine creates planning deadlines relative to the event date, marks past deadlines overdue for upcoming events, skips new preparation tasks for past events, and preserves completed, user-edited, and custom tasks when rescheduling. Backend logic is covered with Python's built-in `unittest` runner:
 
 ```powershell
 $env:PYTHONPATH = "backend"
